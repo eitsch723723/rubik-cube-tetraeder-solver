@@ -17,6 +17,8 @@ Aktueller Testumfang: die vier Hauptzüge `U/R/L/B` und ihre Gegenrichtungen. Je
 
 ## GitHub Pages
 
-GitHub Pages auf `main` / `/ (root)` aktivieren. Danach liegt die Testversion unter:
+GitHub Pages ist für `main` / `/ (root)` aktiviert. Die Testversion wird veröffentlicht unter:
 
 `https://eitsch723723.github.io/rubik-cube-tetraeder-solver/`
+
+Veröffentlichung nach Aktivierung von GitHub Pages erneut angestoßen am 2026-09-13.
