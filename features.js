@@ -4,7 +4,7 @@
   const api=window.__PYRA_TEST__;
   if(!api)return;
   const {Core,state}=api;
-  const FULL_TEST='grggggbggrbrgyyyrrbbbrbbyrrbrbgyyyyy';
+  const FULL_TEST='rrryyygggbgbybbbgggggrbbbyyrrryyybrr';
   const byCode={g:'green',r:'red',b:'blue',y:'yellow'};
   const originalSolve=window.solve;
 
@@ -32,7 +32,7 @@
   $('chooseCube').onclick=()=>{location.href='./cube.html';};
   $('testsBtn').onclick=()=>{$('testDrawer').hidden=!$('testDrawer').hidden;};
   $('quickTestBtn').onclick=()=>loadTest(Core.KNOWN,'quick','Schnelltest geladen. Erwartung: geprüfte 4-Zug-Lösung.');
-  $('fullTestBtn').onclick=()=>loadTest(FULL_TEST,'full',"Großer Test geladen. Der Zustand entstand aus U R L' B U' L R' B.");
+  $('fullTestBtn').onclick=()=>loadTest(FULL_TEST,'full',"Großer Test geladen. Der Zustand entstand aus L R L R' L' B O L H O H' und benötigt eine längere Lösung.");
   $('invalidTestBtn').onclick=()=>loadTest(Core.INVALID,'invalid','Fehlertest geladen. Erwartung: Die App muss diesen Zustand ablehnen.');
 
   $('solveBtn').onclick=async()=>{
