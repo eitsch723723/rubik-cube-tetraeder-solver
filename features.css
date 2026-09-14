@@ -1,0 +1,3 @@
+.test-drawer{position:relative;z-index:20;margin:-2px 0 12px;padding:12px 14px;border:1px solid #b9d8ff;border-radius:14px;background:#f7fbff;box-shadow:0 10px 24px rgba(15,27,45,.1)}
+.test-drawer>strong{display:block;margin-bottom:8px}.test-drawer .test-buttons{margin-top:0}.test-result{min-height:1.2em;margin:8px 0 0;font-size:14px;font-weight:700;color:#475467}.test-result.success{color:#067647}.test-result.error{color:#b42318}
+@media(max-width:430px){.test-drawer{padding:10px}.test-drawer .test-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.test-drawer .btn.small{padding:8px 5px;font-size:12px}}
