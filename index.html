@@ -7,11 +7,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Zauberpuzzle-Löser – Testversion</title>
-  <link rel="stylesheet" href="./styles.css?v=20260914-1">
+  <link rel="stylesheet" href="./styles.css?v=20260914-2">
+  <link rel="stylesheet" href="./features.css?v=20260914-2">
   <style>[hidden]{display:none!important}</style>
 </head>
 <body>
-<!-- deploy: 2026-09-14 -->
 <div class="test-banner">TESTVERSION – separates Repository; die veröffentlichte Cube-App bleibt unverändert</div>
 <div class="app">
   <section class="chooser" id="chooser">
@@ -29,15 +29,29 @@
         <strong>Rubik Tetraeder</strong><small>Pyraminx</small>
       </button>
     </div>
-    <p class="chooser-note">Die Cube-Auswahl öffnet die unveränderte Cube-App. Der Tetraeder wird in dieser Testversion hier gelöst.</p>
+    <p class="chooser-note">Wähle zuerst das Puzzle. Danach öffnet sich der passende Löser.</p>
   </section>
 
   <section class="pyra-app" id="pyraApp" hidden>
     <header>
       <div class="brand"><h1>Rubik Tetraeder lösen</h1><p>Gib die vier Dreiecksflächen ein. Danach führe ich dich Zug für Zug.</p></div>
-      <div class="header-actions"><button class="btn" id="backHome" type="button">Puzzle wählen</button><button class="btn danger" id="resetBtn" type="button">Neu beginnen</button></div>
+      <div class="header-actions">
+        <button class="btn" id="testsBtn" type="button">Tests</button>
+        <button class="btn" id="backHome" type="button">Puzzle wählen</button>
+        <button class="btn danger" id="resetBtn" type="button">Neu beginnen</button>
+      </div>
     </header>
     <div class="status" role="status" aria-live="polite"><span class="status-dot" id="statusDot"></span><span id="statusText">Bereit.</span></div>
+
+    <aside class="test-drawer" id="testDrawer" hidden>
+      <strong>App testen</strong>
+      <div class="test-buttons">
+        <button class="btn small" id="quickTestBtn" type="button">Schnelltest</button>
+        <button class="btn small" id="fullTestBtn" type="button">Großer Test</button>
+        <button class="btn small" id="invalidTestBtn" type="button">Fehlertest</button>
+      </div>
+      <p id="testResult" class="test-result"></p>
+    </aside>
 
     <main id="inputView" class="input-view">
       <nav class="face-tabs" id="faceTabs" aria-label="Tetraederflächen"></nav>
@@ -56,8 +70,7 @@
           <h3>So hältst du den Tetraeder</h3>
           <svg id="holdPreview" class="hold-preview" viewBox="0 0 240 190" aria-hidden="true"></svg>
           <p>Eine Spitze zeigt nach oben. Die Fläche „Vorne“ zeigt zu dir. Behalte diese Orientierung für alle vier Eingabeschritte bei.</p>
-          <h3>Testfälle</h3>
-          <div class="test-buttons"><button class="btn small" id="knownTest" type="button">4-Zug-Test</button><button class="btn small" id="solvedTest" type="button">Gelöst</button><button class="btn small" id="invalidTest" type="button">Unmöglich</button></div>
+          <p class="small-note"><strong>Tests:</strong> Oben über „Tests“ stehen wie beim Zauberwürfel Schnelltest, Großer Test und Fehlertest zur Verfügung.</p>
           <p class="small-note">Aktueller Testumfang: Hauptzüge U/R/L/B. Unabhängig verdrehte kleine Spitzen werden noch nicht separat gelöst.</p>
         </aside>
       </div>
@@ -81,7 +94,13 @@
     </main>
   </section>
 </div>
-<script src="./tetra-core.js?v=20260914-1"></script>
-<script src="./app.js?v=20260914-1" defer></script>
+<script src="./tetra-core.js?v=20260914-2"></script>
+<div hidden aria-hidden="true">
+  <button id="knownTest" type="button"></button>
+  <button id="solvedTest" type="button"></button>
+  <button id="invalidTest" type="button"></button>
+</div>
+<script src="./app.js?v=20260914-2" defer></script>
+<script src="./features.js?v=20260914-2" defer></script>
 </body>
 </html>
