@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Zauberwürfel-Löser</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f5f7fb}
+    #cubeFrame{display:block;width:100%;height:100dvh;border:0;background:#f5f7fb}
+  </style>
+</head>
+<body>
+<iframe id="cubeFrame" title="Zauberwürfel-Löser" src="https://eitsch723723.github.io/rubik-cube-solver/"></iframe>
+<script>
+'use strict';
+const frame=document.getElementById('cubeFrame');
+function injectPuzzleButton(){
+  try{
+    const doc=frame.contentDocument;
+    if(!doc)return;
+    const actions=doc.querySelector('.header-actions');
+    const tests=doc.getElementById('testsBtn');
+    if(!actions||!tests||doc.getElementById('choosePuzzleBtn'))return;
+    const button=doc.createElement('button');
+    button.className='btn';
+    button.id='choosePuzzleBtn';
+    button.type='button';
+    button.textContent='Puzzle wählen';
+    button.setAttribute('aria-label','Anderes Puzzle wählen');
+    button.addEventListener('click',()=>{window.location.href='./';});
+    actions.insertBefore(button,tests);
+  }catch(err){console.warn('Puzzle button injection failed',err);}
+}
+frame.addEventListener('load',()=>{injectPuzzleButton();setTimeout(injectPuzzleButton,250);});
+</script>
+</body>
+</html>
