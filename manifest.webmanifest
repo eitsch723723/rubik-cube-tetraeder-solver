@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "Zauberpuzzle-Löser",
+  "short_name": "Zauberpuzzle",
+  "description": "Kindgerechter Löser für 3×3 Rubik Cube und Rubik Tetraeder (Pyraminx).",
+  "lang": "de-DE",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f5f7fb",
+  "theme_color": "#f5f7fb",
+  "icons": [
+    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}
