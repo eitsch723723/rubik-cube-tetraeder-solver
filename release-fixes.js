@@ -2,7 +2,7 @@
 (function(){
   const $=id=>document.getElementById(id),api=window.__PYRA_TEST__;if(!api)return;
   const {Core,state}=api;
-  const PROGRESS_KEY='rubik-pyra-progress-v1';
+  const PROGRESS_KEY='rubik-pyra-progress-v1',CODE_TO_COLOR={g:'green',r:'red',b:'blue',y:'yellow'};
   let seq=0;
   function solveInWorker(start){
     if(typeof Worker==='undefined')return Promise.resolve(Core.solveFull(start,11));
@@ -22,12 +22,16 @@
       localStorage.setItem(PROGRESS_KEY,JSON.stringify({version:1,active:!!active,start,solution:moves,step:Math.max(0,Math.min(Number(state.step)||0,moves.length))}));
     }catch{}
   }
+  function restoreFaces(start){
+    if(typeof start!=='string'||start.length!==36||![...start].every(c=>CODE_TO_COLOR[c]))throw new Error('invalid-persisted-start');
+    state.faces=Array.from({length:4},(_,fi)=>Array.from({length:9},(_,i)=>CODE_TO_COLOR[start[fi*9+i]]));state.currentFace=0;state.selected='green';
+  }
   function restoreProgress(){
     const p=readProgress();if(!p?.active||p.version!==1||typeof p.start!=='string'||!Array.isArray(p.solution))return;
     try{
-      if(window.toStringState?.()!==p.start||!Core.verifySolution(p.start,p.solution)){clearProgress();return;}
-      state.solution=p.solution.slice();state.states=Core.buildStates(p.start,state.solution);state.step=Math.max(0,Math.min(Number(p.step)||0,state.solution.length));
-      $('chooser').hidden=true;$('pyraApp').hidden=false;window.showSolve();window.setStatus(`Lösung wiederhergestellt: Zug ${Math.min(state.step+1,state.solution.length||0)} von ${state.solution.length}.`,'ok');
+      if(!Core.verifySolution(p.start,p.solution)){clearProgress();return;}
+      restoreFaces(p.start);state.solution=p.solution.slice();state.states=Core.buildStates(p.start,state.solution);state.step=Math.max(0,Math.min(Number(p.step)||0,state.solution.length));
+      window.renderInput();$('chooser').hidden=true;$('pyraApp').hidden=false;window.showSolve();window.setStatus(state.solution.length?`Lösung wiederhergestellt: Zug ${Math.min(state.step+1,state.solution.length)} von ${state.solution.length}.`:'Gelöster Tetraeder wiederhergestellt.','ok');
     }catch(e){console.error(e);clearProgress();}
   }
   const base=m=>m[0].toUpperCase(),isTip=m=>m&&m[0]===m[0].toLowerCase();
@@ -55,7 +59,7 @@
   $('backHome')?.addEventListener('click',()=>{document.body.classList.remove('solving-pyra');queueMicrotask(()=>persistProgress(false));});
   $('resetBtn')?.addEventListener('click',()=>queueMicrotask(()=>{if(state.faces.flat().every(x=>!x))clearProgress();}));
   window.addEventListener('beforeunload',()=>persistProgress(!$('pyraApp')?.hidden&&!$('solveView')?.hidden));
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(restoreProgress,0),{once:true});
+  const scheduleRestore=()=>setTimeout(restoreProgress,0);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scheduleRestore,{once:true});else scheduleRestore();
   if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(console.warn);
-  window.__PYRA_TEST__.solveInWorker=solveInWorker;window.__PYRA_TEST__.persistProgress=persistProgress;window.__PYRA_TEST__.restoreProgress=restoreProgress;window.__PYRA_TEST__.clearProgress=clearProgress;
+  window.__PYRA_TEST__.solveInWorker=solveInWorker;window.__PYRA_TEST__.persistProgress=persistProgress;window.__PYRA_TEST__.restoreProgress=restoreProgress;window.__PYRA_TEST__.clearProgress=clearProgress;window.__PYRA_TEST__.readProgress=readProgress;
 })();
