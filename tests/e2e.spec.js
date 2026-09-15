@@ -24,6 +24,19 @@ async function expectSolveFitsViewport(page){
   });
   expect(fit).toBe(true);
 }
+async function expectInputFitsViewport(page){
+  await expect(page.locator('#inputView')).toBeVisible();
+  const fit=await page.evaluate(()=>{
+    const selectors=['header','.status','.face-tabs','.input-panel','.palette','.counts','.nav-row'];
+    const bounds=selectors.map(s=>document.querySelector(s)?.getBoundingClientRect()).filter(Boolean);
+    const panel=document.querySelector('.input-panel');
+    const tri=document.querySelector('#triangleEditor')?.getBoundingClientRect();
+    const noPageOverflow=document.documentElement.scrollWidth<=window.innerWidth+2&&document.body.scrollWidth<=window.innerWidth+2&&document.documentElement.scrollHeight<=window.innerHeight+2&&document.body.scrollHeight<=window.innerHeight+2;
+    const allVisible=bounds.every(r=>r.left>=-1&&r.right<=window.innerWidth+1&&r.top>=-1&&r.bottom<=window.innerHeight+1);
+    return noPageOverflow&&allVisible&&panel.scrollHeight<=panel.clientHeight+2&&tri&&tri.height>=170&&tri.bottom<=window.innerHeight+1;
+  });
+  expect(fit).toBe(true);
+}
 
 test('Puzzle selection opens deterministic local Cube and returns to chooser',async({page})=>{
   await page.goto('/');
@@ -87,6 +100,15 @@ test('Cube min2phase dependency is immutable in generated Pages site',async({req
   const pin='0ba83a6177d816f72af1a45c9015349da597456a';const worker=await request.get('/cube/solver-worker.js');expect(worker.ok()).toBe(true);const workerText=await worker.text();expect(workerText).toContain(pin);expect(workerText).not.toContain('@master/min2phase.js');
   const nestedSw=await request.get('/cube/sw.js');expect(nestedSw.ok()).toBe(true);const nestedText=await nestedSw.text();expect(nestedText).toContain(pin);expect(nestedText).not.toContain('@master/min2phase.js');
   const rootSw=await request.get('/sw.js');expect(rootSw.ok()).toBe(true);const rootText=await rootSw.text();expect(rootText).toContain(pin);expect(rootText).not.toContain('@master/min2phase.js');
+});
+
+test('Tetraeder input fits iPhone 17 Pro portrait Safari viewport without scrolling',async({page})=>{
+  await page.setViewportSize({width:402,height:740});
+  await loadPyraTest(page,'#quickTestBtn');
+  await expect(page.locator('body')).toHaveClass(/editing-pyra/);
+  await page.locator('.face-tab').nth(3).click();
+  await expect(page.locator('#faceTitle')).toContainText('Unten');
+  await expectInputFitsViewport(page);
 });
 
 test('Tetraeder solve view fits iPhone landscape without page scrolling',async({page})=>{

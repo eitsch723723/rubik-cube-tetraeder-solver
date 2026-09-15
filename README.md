@@ -22,6 +22,7 @@ Weitere Sicherheits- und UX-Funktionen:
 - Pause der Animation bei ausgeblendeter Seite.
 - Speicherung und validierte Wiederherstellung des Lösungsfortschritts nach Reload.
 - Responsive Layouts für iPhone-/iPad-Viewportgrößen einschließlich Safe Areas.
+- Kompakte Tetraeder-Eingabeansicht für iPhone-Portrait, sodass Header, Flächenwahl, Eingabedreieck, Farbauswahl und Navigation ohne Seitenscrolling erreichbar bleiben.
 
 ## Tests und Qualitätssicherung
 
@@ -31,7 +32,7 @@ GitHub Actions baut die veröffentlichte Seite deterministisch und führt vor de
 - Tetraeder-Unit-Regressionen einschließlich bekannter Sequenzen, Hauptzügen, Spitzenzügen, unmöglichen Zuständen und 20 deterministischen Scrambles.
 - Browser-E2E in Chromium und WebKit.
 - Prüfungen auf exakte Animation/Move-Zuordnung, Reduced Motion, Hintergrund-Pause, Fortschrittswiederherstellung und unveränderliche Cube-Solver-Abhängigkeit.
-- Mobile Viewport-Regressionen für iPhone Landscape sowie iPad Portrait/Landscape.
+- Mobile Viewport-Regressionen für iPhone 17 Pro Portrait mit reduziertem Safari-Viewport, iPhone Landscape sowie iPad Portrait/Landscape.
 - Prüfung, dass kein `TESTVERSION`-Banner oder entsprechender Seitentitel mehr ausgeliefert wird.
 
 Details und Abgrenzung zwischen automatisierten und realen Gerätetests stehen in [`TEST_REPORT.md`](./TEST_REPORT.md).

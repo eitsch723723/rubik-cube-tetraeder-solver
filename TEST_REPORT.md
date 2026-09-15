@@ -40,11 +40,12 @@ Die E2E-Suite wird jeweils in Chromium und WebKit ausgeführt. Geprüft werden u
 - Pause/Fortsetzung der Animation bei ausgeblendeter Seite,
 - Speicherung und validierte Wiederherstellung des Lösungsfortschritts,
 - unveränderliche `min2phase.js`-Pinnung im erzeugten Pages-Build,
-- iPhone-Landscape-Viewport ohne unerwünschtes Seitenscrolling,
+- Tetraeder-Eingabe auf einem iPhone-17-Pro-Portrait-Viewport mit 402 px Breite und bewusst auf 740 px reduziertem nutzbaren Safari-Höhenbereich: kein Seitenscrolling, alle wesentlichen Bedienelemente vollständig im Viewport und ausreichend große Dreiecks-Eingabe,
+- iPhone-Landscape-Lösungsansicht ohne unerwünschtes Seitenscrolling,
 - iPad Portrait und Landscape,
 - Release-Oberfläche ohne `TESTVERSION`-Banner und ohne „Testversion“ im Seitentitel.
 
-Vor dem P3-Abschluss bestand die Suite aus 10 Szenarien pro Browser, also 20 Browser-Testausführungen. Der P3-Regressionstest wurde in ein bestehendes Szenario integriert, sodass die Anzahl gleich bleibt.
+Die iPhone-17-Pro-Portrait-Regressionsprüfung verwendet absichtlich weniger als die volle Gerätehöhe, um die durch Safari-Adress-/Toolbar belegte Fläche konservativ zu berücksichtigen. Sie ist trotzdem eine automatisierte Viewport-Simulation und kein physischer Gerätetest.
 
 ## Deployment-Test
 
