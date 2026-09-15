@@ -12,7 +12,7 @@ Der GitHub-Actions-Workflow erstellt vor dem Deployment ein deterministisches Gi
 
 - JavaScript-Syntaxprüfung für Root-App, Feature-Module, Tetraeder-Core, Tetraeder-Worker, Visualisierung und Service Worker.
 - JavaScript-Syntaxprüfung für den erzeugten lokalen Cube-Löser und dessen Worker.
-- Build-Abbruch, falls die erwartete Cube-Solver-Quelle nicht eindeutig auf die gepinnte Version umgestellt werden kann.
+- Build-Abbruch, falls die erwartete Cube-Solver-Quelle nicht mehr eindeutig auf die gepinnte Version umgestellt werden kann.
 
 ### Tetraeder-Unit-Regression
 
@@ -41,6 +41,7 @@ Die E2E-Suite wird jeweils in Chromium und WebKit ausgeführt. Geprüft werden u
 - Speicherung und validierte Wiederherstellung des Lösungsfortschritts,
 - unveränderliche `min2phase.js`-Pinnung im erzeugten Pages-Build,
 - Tetraeder-Eingabe auf einem iPhone-17-Pro-Portrait-Viewport mit 402 px Breite und bewusst auf 740 px reduziertem nutzbaren Safari-Höhenbereich: kein Seitenscrolling, alle wesentlichen Bedienelemente vollständig im Viewport und ausreichend große Dreiecks-Eingabe,
+- Tetraeder-Lösungsansicht auf demselben iPhone-Portrait-Viewport: die SVG-Animation bleibt vollständig zwischen Richtungsanzeige und Replay-Button innerhalb ihres Panels, die reale große Testlösung wird vollständig angezeigt und eine 15-Zug-Maximalliste wird ohne horizontales oder vertikales Scrollen der Zugliste gleichzeitig dargestellt,
 - iPhone-Landscape-Lösungsansicht ohne unerwünschtes Seitenscrolling,
 - iPad Portrait und Landscape,
 - Release-Oberfläche ohne `TESTVERSION`-Banner und ohne „Testversion“ im Seitentitel.
@@ -60,7 +61,8 @@ Bei Änderungen werden insbesondere folgende Kopplungen geprüft:
 - Move ↔ betroffene Ebene und Drehrichtung der Animation,
 - State nach Bestätigung ↔ dargestellte Sticker,
 - relative Pfade, Service-Worker-Cache und GitHub-Pages-Unterpfad,
-- Safe Areas und dynamische Viewports nach Layoutänderungen.
+- Safe Areas und dynamische Viewports nach Layoutänderungen,
+- Begrenzung der 3D-Animation auf ihren eigenen Layoutbereich und vollständige Sichtbarkeit der Lösungszugfolge.
 
 ## Nicht durchgeführt
 
