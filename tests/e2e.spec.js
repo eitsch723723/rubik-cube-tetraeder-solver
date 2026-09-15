@@ -39,13 +39,15 @@ test('Puzzle selection opens deterministic local Cube and returns to chooser',as
   await page.click('#choosePuzzleBtn');await expect(page).toHaveURL(/\/$/);await expect(page.locator('#chooser')).toBeVisible();
 });
 
-test('Tetraeder quick test solves completely and animation mapping is exact',async({page})=>{
+test('Tetraeder quick test solves completely, maps animation exactly and keeps permanent orientation markers',async({page})=>{
   await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();
   await expect(page.locator('#solveView')).toBeVisible();await expect(page.locator('#statusText')).toContainText('Lösung verifiziert');
   const mapping=await page.evaluate(()=>window.__PYRA_VISUAL_TEST__?.verifyVisualMapping());expect(mapping).toBe(true);
   await expect(page.locator('.mini-face-label strong')).toHaveText(['V','L','R','U']);
+  await expect(page.locator('.orientation-marker text')).toHaveText(['V','L','R','U']);
   const points=()=>page.locator('#solvePreview').evaluate(svg=>[...svg.querySelectorAll('polygon')].map(p=>p.getAttribute('points')).join('|'));
-  const before=await points();await page.waitForTimeout(350);const after=await points();expect(after).not.toBe(before);
+  const before=await points(),statsBefore=await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.stats());await page.waitForTimeout(350);const after=await points(),statsAfter=await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.stats());
+  expect(after).not.toBe(before);expect(statsAfter.sceneBuilds).toBe(statsBefore.sceneBuilds);expect(statsAfter.movingPointUpdates).toBeGreaterThan(statsBefore.movingPointUpdates);expect(statsAfter.polygonCount).toBe(36);
   await expectSolveFitsViewport(page);
 });
 
@@ -60,6 +62,28 @@ test('Tetraeder impossible state is rejected',async({page})=>{
   await loadPyraTest(page,'#invalidTestBtn');await page.locator('#solveBtn').click();
   await expect(page.locator('#statusText')).toContainText('physikalisch nicht erreichbar');await expect(page.locator('#solveView')).toBeHidden();
   await expect(page.locator('#testResult')).toContainText('Fehlertest bestanden');
+});
+
+test('Reduced motion disables continuous Tetraeder turn animation',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expect(page.locator('#solveView')).toBeVisible();
+  const before=await page.locator('#solvePreview').evaluate(svg=>[...svg.querySelectorAll('polygon')].map(p=>p.getAttribute('points')).join('|'));await page.waitForTimeout(450);const after=await page.locator('#solvePreview').evaluate(svg=>[...svg.querySelectorAll('polygon')].map(p=>p.getAttribute('points')).join('|'));
+  expect(after).toBe(before);expect(await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.isReducedMotion())).toBe(true);expect(await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.isAnimating())).toBe(false);
+});
+
+test('Tetraeder animation pauses while hidden and resumes when visible',async({page})=>{
+  await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expect(page.locator('#solveView')).toBeVisible();await page.waitForTimeout(100);
+  expect(await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.isAnimating())).toBe(true);await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.syncVisibility(true));expect(await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.isAnimating())).toBe(false);await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.syncVisibility(false));await page.waitForTimeout(50);expect(await page.evaluate(()=>window.__PYRA_VISUAL_TEST__.isAnimating())).toBe(true);
+});
+
+test('Tetraeder solution progress survives reload',async({page})=>{
+  await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expect(page.locator('#solveView')).toBeVisible();await page.locator('#nextStep').click();await expect(page.locator('#stepCount')).toContainText('Zug 2 von 4');
+  await page.reload({waitUntil:'domcontentloaded'});await expect(page.locator('#pyraApp')).toBeVisible();await expect(page.locator('#solveView')).toBeVisible();await expect(page.locator('#stepCount')).toContainText('Zug 2 von 4');expect(await page.evaluate(()=>window.__PYRA_TEST__.state.step)).toBe(1);
+});
+
+test('Cube min2phase dependency is immutable in generated Pages site',async({request})=>{
+  const pin='0ba83a6177d816f72af1a45c9015349da597456a';const worker=await request.get('/cube/solver-worker.js');expect(worker.ok()).toBe(true);const workerText=await worker.text();expect(workerText).toContain(pin);expect(workerText).not.toContain('@master/min2phase.js');
+  const nestedSw=await request.get('/cube/sw.js');expect(nestedSw.ok()).toBe(true);const nestedText=await nestedSw.text();expect(nestedText).toContain(pin);expect(nestedText).not.toContain('@master/min2phase.js');
+  const rootSw=await request.get('/sw.js');expect(rootSw.ok()).toBe(true);const rootText=await rootSw.text();expect(rootText).toContain(pin);expect(rootText).not.toContain('@master/min2phase.js');
 });
 
 test('Tetraeder solve view fits iPhone landscape without page scrolling',async({page})=>{
