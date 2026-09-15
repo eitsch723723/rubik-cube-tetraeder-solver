@@ -24,10 +24,6 @@ async function expectSolveFitsViewport(page){
   });
   expect(fit).toBe(true);
 }
-async function clearPersistedSolve(page){
-  await page.goto('/',{waitUntil:'domcontentloaded'});
-  await page.evaluate(()=>localStorage.removeItem('rubik-pyra-progress-v1'));
-}
 
 test('Puzzle selection opens deterministic local Cube and returns to chooser',async({page})=>{
   await page.goto('/');
@@ -95,7 +91,8 @@ test('Tetraeder solve view fits iPhone landscape without page scrolling',async({
 });
 
 test('Tetraeder solve view fits iPad portrait and landscape',async({page})=>{
+  await page.addInitScript(()=>localStorage.removeItem('rubik-pyra-progress-v1'));
   for(const viewport of [{width:820,height:1180},{width:1180,height:820}]){
-    await page.setViewportSize(viewport);await clearPersistedSolve(page);await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expectSolveFitsViewport(page);
+    await page.setViewportSize(viewport);await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expectSolveFitsViewport(page);
   }
 });
