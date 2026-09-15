@@ -8,5 +8,11 @@ Diese Punkte wurden bewusst nicht als Teil der P0/P1-Korrekturen umgesetzt und s
 4. **P2 – Zusätzliche Tetraeder-Testabdeckung:** Die neue CI testet Hauptzüge, Spitzenzüge, Voll-Scramble, unmöglichen Zustand und Visual-Mapping. Zusätzlich wären weitere bekannte/randomisierte Sequenzen sinnvoll.
 5. **P2 – Orientierungsmarker:** In der animierten 3D-Tetraederansicht permanente Orientierungsmarker für V/L/R/U ergänzen.
 6. **P2 – Lösungsfortschritt speichern:** Tetraeder-Lösungsmodus und aktueller Schritt werden noch nicht in `localStorage` persistiert.
-7. **P3 – Testbanner:** Den sichtbaren Hinweis „TESTVERSION“ nach Abschluss der Testphase entfernen.
-8. **P3 – Dokumentationspflege:** README/Testbericht nach größeren Architekturänderungen kontinuierlich aktuell halten.
+7. **P2 – GitHub-Pages-Re-Run:** Ein Re-Run des bestehenden `test-and-build`-Jobs erzeugt ein zweites Artifact namens `github-pages`. Der nachgelagerte `deploy-pages`-Job schlägt dann mit „Multiple artifacts named github-pages“ fehl. Der normale neue Push-/Workflow-Run funktioniert; für sichere Re-Runs sollte die Artifact-/Workflow-Strategie angepasst werden.
+8. **P3 – Testbanner:** Den sichtbaren Hinweis „TESTVERSION“ nach Abschluss der Testphase entfernen.
+9. **P3 – Dokumentationspflege:** README/Testbericht nach größeren Architekturänderungen kontinuierlich aktuell halten.
+
+## Teststatus 2026-09-15
+
+- P1-Regressionssuite erneut ausgeführt: Build, Syntaxprüfungen, Solver-Unit-Tests, Chromium und WebKit erfolgreich.
+- Die oben aufgeführten P2-Punkte wurden im Code-Review erneut geprüft und sind weiterhin offen; sie dürfen nicht als bereits implementiert betrachtet werden.
