@@ -1,5 +1,6 @@
 /* Tetraeder move animation + labeled face-state cards */
-.solve-preview{min-height:260px;overflow:hidden;contain:paint}
+.solve-preview-frame{width:100%;min-height:260px;overflow:hidden;contain:paint;display:grid;place-items:stretch}
+.solve-preview{display:block;width:100%;height:100%;min-width:0;min-height:0;max-width:100%;max-height:100%;overflow:hidden;contain:paint}
 .mini-face-card{background:#fafafa;border:1px solid #e4e7ec;border-radius:12px;padding:5px 5px 7px;overflow:hidden}
 .mini-face-card .mini-face-svg{border:0;background:transparent;padding:0;border-radius:0}
 .mini-face-label{display:flex;align-items:center;justify-content:center;gap:7px;padding:3px 4px 2px;color:#344054;font-size:13px;line-height:1}
@@ -17,7 +18,9 @@ body.solving-pyra .instruction-panel,body.solving-pyra .visual-panel{min-height:
 body.solving-pyra .solution-list{max-height:none;overflow:visible}
 body.solving-pyra .visual-panel{position:relative}
 body.solving-pyra .direction-card{position:relative;z-index:2}
+body.solving-pyra .solve-preview-frame{position:relative;z-index:1;overflow:hidden;contain:paint}
 body.solving-pyra .solve-preview{position:relative;z-index:1;overflow:hidden;contain:paint}
+body.solving-pyra #replayBtn{position:relative;z-index:3}
 @media(max-width:720px){
   body.solving-pyra .app{padding:5px max(6px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left))}
   body.solving-pyra header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px;align-items:start}
@@ -39,7 +42,8 @@ body.solving-pyra .solve-preview{position:relative;z-index:1;overflow:hidden;con
   body.solving-pyra .move-chip{min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip;font-size:10px;line-height:1.05;padding:3px 3px}
   body.solving-pyra .visual-panel{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:4px;align-items:stretch}
   body.solving-pyra .direction-card{font-size:12px;line-height:1.1;padding:5px;margin:0;overflow:hidden}
-  body.solving-pyra .solve-preview{display:block;width:100%;height:100%;min-height:0;max-height:none;overflow:hidden;contain:paint;align-self:stretch}
+  body.solving-pyra .solve-preview-frame{width:100%;height:100%;min-width:0;min-height:0;max-width:100%;max-height:100%;overflow:hidden;contain:paint;display:grid;place-items:stretch;align-self:stretch}
+  body.solving-pyra .solve-preview{display:block;width:100%;height:100%;min-width:0;min-height:0;max-width:100%;max-height:100%;overflow:hidden;contain:paint;align-self:stretch}
   body.solving-pyra #replayBtn{justify-self:start;font-size:11px;padding:5px 8px;border-radius:10px}
   body.solving-pyra .flat-pyra{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin-top:0}
   body.solving-pyra .mini-face-card{padding:2px 2px 3px;border-radius:8px}
@@ -78,6 +82,6 @@ body.solving-pyra .solve-preview{position:relative;z-index:1;overflow:hidden;con
   body.solving-pyra .visual-panel{grid-template-rows:auto minmax(0,1fr) auto}
   body.solving-pyra .flat-pyra{display:none}
   body.solving-pyra .direction-card{font-size:12px;padding:4px}
-  body.solving-pyra .solve-preview{overflow:hidden;contain:paint}
+  body.solving-pyra .solve-preview-frame,body.solving-pyra .solve-preview{min-height:0;max-height:100%;overflow:hidden;contain:paint}
   body.solving-pyra #replayBtn{font-size:10px;padding:4px 7px}
 }

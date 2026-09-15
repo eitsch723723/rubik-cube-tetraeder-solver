@@ -14,7 +14,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css?v=20260915-3">
   <link rel="stylesheet" href="./features.css?v=20260915-3">
-  <link rel="stylesheet" href="./tetra-visuals.css?v=20260915-4">
+  <link rel="stylesheet" href="./tetra-visuals.css?v=20260915-5">
   <style>[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -53,7 +53,7 @@
     <main id="solveView" class="solve-view" hidden>
       <div class="solve-layout">
         <section class="panel instruction-panel"><small id="stepCount">Start</small><h2 id="moveTitle">Los geht's</h2><p id="moveDescription"></p><div class="move-badge" id="moveBadge">–</div><div class="controls"><button class="btn" id="backStep" type="button">← Letzten Zug zurück</button><button class="btn primary" id="nextStep" type="button">Diesen Zug habe ich gemacht →</button><button class="btn" id="editBtn" type="button">Farben ändern</button></div><div class="solution-list" id="solutionList"></div></section>
-        <section class="panel visual-panel"><div class="direction-card" id="directionCard">Start</div><svg id="solvePreview" class="solve-preview" viewBox="0 0 300 230" aria-label="3D-Ansicht des Tetraeders"></svg><button class="btn" id="replayBtn" type="button">Animation neu starten</button><div class="flat-pyra" id="flatPyra"></div></section>
+        <section class="panel visual-panel"><div class="direction-card" id="directionCard">Start</div><div class="solve-preview-frame"><svg id="solvePreview" class="solve-preview" viewBox="0 0 300 230" aria-label="3D-Ansicht des Tetraeders"></svg></div><button class="btn" id="replayBtn" type="button">Animation neu starten</button><div class="flat-pyra" id="flatPyra"></div></section>
       </div>
     </main>
   </section>
