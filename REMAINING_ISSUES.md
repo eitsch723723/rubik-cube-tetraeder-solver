@@ -1,18 +1,22 @@
-# Verbleibende Issues nach P0/P1-Release
+# Verbleibende Issues
 
-Diese Punkte wurden bewusst nicht als Teil der P0/P1-Korrekturen umgesetzt und sollen später erneut bewertet werden.
+## P2 – abgeschlossen am 2026-09-15
 
-1. **P2 – Reduced Motion:** Die wiederholte Tetraeder-Zuganimation soll `prefers-reduced-motion` berücksichtigen.
-2. **P2 – Energieverbrauch:** Die Tetraeder-Animation rendert während des Wartens fortlaufend SVG-Geometrie neu. Optimieren und bei `document.hidden` pausieren.
-3. **P2 – Cube-Solver-Abhängigkeit:** `min2phase.js` wird weiterhin über jsDelivr von `@master` geladen. Auf festen Commit pinnen oder lokal ausliefern.
-4. **P2 – Zusätzliche Tetraeder-Testabdeckung:** Die neue CI testet Hauptzüge, Spitzenzüge, Voll-Scramble, unmöglichen Zustand und Visual-Mapping. Zusätzlich wären weitere bekannte/randomisierte Sequenzen sinnvoll.
-5. **P2 – Orientierungsmarker:** In der animierten 3D-Tetraederansicht permanente Orientierungsmarker für V/L/R/U ergänzen.
-6. **P2 – Lösungsfortschritt speichern:** Tetraeder-Lösungsmodus und aktueller Schritt werden noch nicht in `localStorage` persistiert.
-7. **P2 – GitHub-Pages-Re-Run:** Ein Re-Run des bestehenden `test-and-build`-Jobs erzeugt ein zweites Artifact namens `github-pages`. Der nachgelagerte `deploy-pages`-Job schlägt dann mit „Multiple artifacts named github-pages“ fehl. Der normale neue Push-/Workflow-Run funktioniert; für sichere Re-Runs sollte die Artifact-/Workflow-Strategie angepasst werden.
-8. **P3 – Testbanner:** Den sichtbaren Hinweis „TESTVERSION“ nach Abschluss der Testphase entfernen.
-9. **P3 – Dokumentationspflege:** README/Testbericht nach größeren Architekturänderungen kontinuierlich aktuell halten.
+Die zuvor offenen P2-Punkte sind umgesetzt und werden durch die CI-Regressionssuite abgesichert:
 
-## Teststatus 2026-09-15
+1. **Reduced Motion – erledigt:** Die Tetraeder-Zuganimation berücksichtigt `prefers-reduced-motion` und zeigt bei reduzierter Bewegung einen statischen, eindeutig beschrifteten Zustand statt einer Dauerdrehung.
+2. **Energieverbrauch – erledigt:** Die 3D-Ansicht baut ihre SVG-Sticker nicht mehr in jedem Frame neu auf. Nur betroffene Stickerpunkte werden aktualisiert; bei ausgeblendeter Seite (`document.hidden`) pausiert die Animation und wird beim Zurückkehren fortgesetzt.
+3. **Cube-Solver-Abhängigkeit – erledigt:** `min2phase.js` wird im kombinierten Build auf den unveränderlichen Upstream-Commit `0ba83a6177d816f72af1a45c9015349da597456a` gepinnt. Der Build schlägt fehl, falls die erwartete Quelle nicht mehr patchbar ist.
+4. **Zusätzliche Tetraeder-Testabdeckung – erledigt:** Neben den bekannten Referenzfällen werden mehrere feste Sequenzen und 20 deterministisch erzeugte Scrambles geprüft. Jede berechnete Lösung wird durch die interne Move-Engine erneut verifiziert.
+5. **Orientierungsmarker – erledigt:** Die animierte 3D-Tetraederansicht zeigt permanent `V`, `L`, `R`, `U` direkt am Modell.
+6. **Lösungsfortschritt – erledigt:** Lösungsmodus, Lösung und aktueller Schritt werden in `localStorage` gespeichert, vor Wiederherstellung erneut verifiziert und nach einem Reload fortgesetzt.
+7. **GitHub-Pages-Re-Run – erledigt:** Pages-Artefakte verwenden pro Workflow-Attempt einen eindeutigen Namen (`github-pages-${{ github.run_attempt }}`), sodass ein Re-Run nicht mehr zwei gleichnamige Deploy-Artefakte erzeugt.
 
-- P1-Regressionssuite erneut ausgeführt: Build, Syntaxprüfungen, Solver-Unit-Tests, Chromium und WebKit erfolgreich.
-- Die oben aufgeführten P2-Punkte wurden im Code-Review erneut geprüft und sind weiterhin offen; sie dürfen nicht als bereits implementiert betrachtet werden.
+## Noch offen
+
+1. **P3 – Testbanner:** Den sichtbaren Hinweis „TESTVERSION“ nach Abschluss der Testphase entfernen.
+2. **P3 – Dokumentationspflege:** README/Testbericht nach größeren Architekturänderungen kontinuierlich aktuell halten.
+
+## Testanforderung für den P2-Abschluss
+
+Der P2-Status gilt nur als bestätigt, wenn der aktuelle `main`-Stand Build, Syntaxprüfungen, Solver-Unit-Tests, Chromium- und WebKit-E2E sowie den normalen Pages-Deploy erfolgreich durchläuft. Zusätzlich wird anschließend ein Re-Run desselben Workflow-Runs ausgeführt, um die neue Artifact-Strategie explizit zu verifizieren.
