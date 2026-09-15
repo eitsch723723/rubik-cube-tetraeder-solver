@@ -16,6 +16,14 @@ async function loadPyraTest(page,button){
   await page.locator(button).click();
   await expect(page.locator('#solveBtn')).toBeVisible();
 }
+async function expectSolveFitsViewport(page){
+  await expect(page.locator('#solveView')).toBeVisible();
+  const fit=await page.evaluate(()=>{
+    const r=document.querySelector('#solveView').getBoundingClientRect();
+    return document.documentElement.scrollWidth<=window.innerWidth+2&&document.body.scrollWidth<=window.innerWidth+2&&document.documentElement.scrollHeight<=window.innerHeight+2&&document.body.scrollHeight<=window.innerHeight+2&&r.right<=window.innerWidth+2&&r.bottom<=window.innerHeight+2;
+  });
+  expect(fit).toBe(true);
+}
 
 test('Puzzle selection opens deterministic local Cube and returns to chooser',async({page})=>{
   await page.goto('/');
@@ -38,7 +46,7 @@ test('Tetraeder quick test solves completely and animation mapping is exact',asy
   await expect(page.locator('.mini-face-label strong')).toHaveText(['V','L','R','U']);
   const points=()=>page.locator('#solvePreview').evaluate(svg=>[...svg.querySelectorAll('polygon')].map(p=>p.getAttribute('points')).join('|'));
   const before=await points();await page.waitForTimeout(350);const after=await points();expect(after).not.toBe(before);
-  const noScroll=await page.evaluate(()=>document.documentElement.scrollHeight<=window.innerHeight+2&&document.body.scrollHeight<=window.innerHeight+2);expect(noScroll).toBe(true);
+  await expectSolveFitsViewport(page);
 });
 
 test('Tetraeder full test includes independent tip moves and verifies final state',async({page})=>{
@@ -55,6 +63,11 @@ test('Tetraeder impossible state is rejected',async({page})=>{
 });
 
 test('Tetraeder solve view fits iPhone landscape without page scrolling',async({page})=>{
-  await page.setViewportSize({width:844,height:390});await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expect(page.locator('#solveView')).toBeVisible();
-  const fit=await page.evaluate(()=>{const r=document.querySelector('#solveView').getBoundingClientRect();return document.documentElement.scrollHeight<=window.innerHeight+2&&document.body.scrollHeight<=window.innerHeight+2&&r.bottom<=window.innerHeight+2;});expect(fit).toBe(true);
+  await page.setViewportSize({width:844,height:390});await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expectSolveFitsViewport(page);
+});
+
+test('Tetraeder solve view fits iPad portrait and landscape',async({page})=>{
+  for(const viewport of [{width:820,height:1180},{width:1180,height:820}]){
+    await page.setViewportSize(viewport);await loadPyraTest(page,'#quickTestBtn');await page.locator('#solveBtn').click();await expectSolveFitsViewport(page);
+  }
 });
