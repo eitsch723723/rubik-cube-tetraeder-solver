@@ -27,6 +27,9 @@ async function expectSolveFitsViewport(page){
 
 test('Puzzle selection opens deterministic local Cube and returns to chooser',async({page})=>{
   await page.goto('/');
+  await expect(page).toHaveTitle('Zauberpuzzle-Löser');
+  await expect(page.locator('.test-banner')).toHaveCount(0);
+  expect(await page.locator('body').innerText()).not.toContain('TESTVERSION');
   await expect(page.locator('#chooser')).toBeVisible();
   await expect(page.locator('#pyraApp')).toBeHidden();
   await page.click('#chooseCube');
