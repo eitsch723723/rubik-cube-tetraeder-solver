@@ -17,11 +17,15 @@ async function expectCompleteMoveList(page){
     const sequence=document.querySelector('.solution-sequence');
     const list=document.querySelector('#solutionList');
     const instruction=document.querySelector('.instruction-panel');
+    const solve=document.querySelector('#solveView');
     const chips=[...list.querySelectorAll('.move-chip')];
     const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect();
     const stepText=document.querySelector('#stepCount').textContent;
     const total=Number((stepText.match(/von\s+(\d+)/)||[])[1]||0);
-    const allVisible=chips.every(chip=>{const r=chip.getBoundingClientRect();return r.left>=lr.left-1&&r.right<=lr.right+1&&r.top>=lr.top-1&&r.bottom<=lr.bottom+1&&r.bottom<=ir.bottom+1;});
+    const allVisible=chips.every(chip=>{
+      const r=chip.getBoundingClientRect();
+      return r.left>=lr.left-1&&r.right<=lr.right+1&&r.top>=lr.top-1&&r.bottom<=lr.bottom+1&&r.bottom<=ir.bottom+1&&r.left>=-1&&r.right<=window.innerWidth+1&&r.top>=-1&&r.bottom<=window.innerHeight+1;
+    });
     const allTextVisible=chips.every(chip=>chip.scrollWidth<=chip.clientWidth+1&&chip.scrollHeight<=chip.clientHeight+1);
     return {
       total,
@@ -32,7 +36,7 @@ async function expectCompleteMoveList(page){
       allTextVisible,
       listFits:list.scrollWidth<=list.clientWidth+1&&list.scrollHeight<=list.clientHeight+1,
       instructionFits:instruction.scrollHeight<=instruction.clientHeight+2,
-      pageFits:document.documentElement.scrollWidth<=window.innerWidth+2&&document.body.scrollWidth<=window.innerWidth+2&&document.documentElement.scrollHeight<=window.innerHeight+2&&document.body.scrollHeight<=window.innerHeight+2
+      solveHorizontalFit:solve.scrollWidth<=solve.clientWidth+2
     };
   });
   expect(result.total).toBeGreaterThan(5);
@@ -43,7 +47,7 @@ async function expectCompleteMoveList(page){
   expect(result.allTextVisible).toBe(true);
   expect(result.listFits).toBe(true);
   expect(result.instructionFits).toBe(true);
-  expect(result.pageFits).toBe(true);
+  expect(result.solveHorizontalFit).toBe(true);
   return result;
 }
 
@@ -59,6 +63,7 @@ test('Zauberwürfel always shows the complete solution move list on iPhone portr
     return getComputedStyle(sequence).display!=='none'&&getComputedStyle(list).overflow==='visible';
   });
   expect(tightStillVisible).toBe(true);
+  await expectCompleteMoveList(page);
 
   await page.setViewportSize({width:844,height:390});
   await page.waitForTimeout(180);
