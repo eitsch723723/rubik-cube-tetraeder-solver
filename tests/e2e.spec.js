@@ -44,12 +44,13 @@ async function expectAllSolutionMovesVisibleAndAnimationContained(page){
     const instruction=document.querySelector('.instruction-panel');
     const visual=document.querySelector('.visual-panel');
     const direction=document.querySelector('#directionCard');
+    const frame=document.querySelector('.solve-preview-frame');
     const preview=document.querySelector('#solvePreview');
     const replay=document.querySelector('#replayBtn');
-    const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect(),dr=direction.getBoundingClientRect(),pr=preview.getBoundingClientRect(),rr=replay.getBoundingClientRect();
+    const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect(),dr=direction.getBoundingClientRect(),fr=frame.getBoundingClientRect(),rr=replay.getBoundingClientRect();
     const allChipsVisible=chips.every(chip=>{const r=chip.getBoundingClientRect();return r.left>=lr.left-1&&r.right<=lr.right+1&&r.top>=lr.top-1&&r.bottom<=lr.bottom+1&&r.bottom<=ir.bottom+1;});
     const allChipTextVisible=chips.every(chip=>chip.scrollWidth<=chip.clientWidth+1&&chip.scrollHeight<=chip.clientHeight+1);
-    const previewStyle=getComputedStyle(preview),visualStyle=getComputedStyle(visual);
+    const previewStyle=getComputedStyle(preview),frameStyle=getComputedStyle(frame),visualStyle=getComputedStyle(visual);
     return {
       count:chips.length,
       solutionLength:window.__PYRA_TEST__.state.solution.length,
@@ -58,10 +59,13 @@ async function expectAllSolutionMovesVisibleAndAnimationContained(page){
       listFits:list.scrollWidth<=list.clientWidth+1&&list.scrollHeight<=list.clientHeight+1,
       instructionFits:instruction.scrollHeight<=instruction.clientHeight+2,
       previewOverflow:previewStyle.overflow,
+      frameOverflow:frameStyle.overflow,
       visualOverflow:visualStyle.overflow,
       previewPaintContained:previewStyle.contain.includes('paint'),
-      animationClearOfDirection:pr.top>=dr.bottom-2,
-      animationClearOfReplay:pr.bottom<=rr.top+2
+      framePaintContained:frameStyle.contain.includes('paint'),
+      animationClearOfDirection:fr.top>=dr.bottom-2,
+      animationClearOfReplay:fr.bottom<=rr.top+2,
+      frameHasUsableHeight:fr.height>=60
     };
   });
   expect(result.count).toBe(result.solutionLength);
@@ -70,10 +74,13 @@ async function expectAllSolutionMovesVisibleAndAnimationContained(page){
   expect(result.listFits).toBe(true);
   expect(result.instructionFits).toBe(true);
   expect(result.previewOverflow).toBe('hidden');
+  expect(result.frameOverflow).toBe('hidden');
   expect(result.visualOverflow).toBe('hidden');
   expect(result.previewPaintContained).toBe(true);
+  expect(result.framePaintContained).toBe(true);
   expect(result.animationClearOfDirection).toBe(true);
   expect(result.animationClearOfReplay).toBe(true);
+  expect(result.frameHasUsableHeight).toBe(true);
   return result;
 }
 
