@@ -1,5 +1,5 @@
 'use strict';
-const CACHE='rubik-puzzle-pwa-v1';
+const CACHE='rubik-puzzle-pwa-v2';
 const BASE=new URL('./',self.location.href);
 const LOCAL=[
   './','./index.html','./styles.css?v=20260915-1','./features.css?v=20260915-1','./tetra-visuals.css?v=20260915-1',
@@ -8,7 +8,7 @@ const LOCAL=[
   './cube/','./cube/index.html','./cube/styles.css?v=20260913-2','./cube/app.js?v=20260913-2','./cube/solver-worker.js','./cube/manifest.webmanifest',
   './cube/icons/apple-touch-icon.png','./cube/icons/icon-192.png','./cube/icons/icon-512.png'
 ].map(p=>new URL(p,BASE).href);
-const SOLVER='https://cdn.jsdelivr.net/gh/cs0x7f/min2phase.js@master/min2phase.js';
+const SOLVER='https://cdn.jsdelivr.net/gh/cs0x7f/min2phase.js@0ba83a6177d816f72af1a45c9015349da597456a/min2phase.js';
 self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(LOCAL);try{const r=await fetch(SOLVER,{mode:'cors'});if(r.ok)await cache.put(SOLVER,r.clone());}catch{}await self.skipWaiting();})()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k!==CACHE&&!k.startsWith('rubik-solver-pwa-')).map(k=>caches.delete(k)));await self.clients.claim();})()));
 self.addEventListener('fetch',event=>{
