@@ -12,6 +12,9 @@ const cubeFiles=['index.html','styles.css','app.js','solver-worker.js','sw.js','
 for(const f of cubeFiles){const p=path.join(cube,f);if(!fs.existsSync(p))throw new Error(`Missing pinned cube file ${f}`);fs.copyFileSync(p,path.join(cubeOut,f));}
 fs.cpSync(path.join(cube,'icons'),path.join(cubeOut,'icons'),{recursive:true});
 fs.cpSync(path.join(cube,'icons'),path.join(out,'icons'),{recursive:true});
+const cubeOverride=path.join(src,'cube-solution-list.css');
+if(!fs.existsSync(cubeOverride))throw new Error('Missing combined Cube solution-list override.');
+fs.appendFileSync(path.join(cubeOut,'styles.css'),'\n\n'+fs.readFileSync(cubeOverride,'utf8'));
 let html=fs.readFileSync(path.join(cubeOut,'index.html'),'utf8');
 const marker='<button class="btn" id="testsBtn" type="button">Tests</button>';
 if(!html.includes(marker))throw new Error('Pinned Cube header marker changed; review integration before deploying.');
