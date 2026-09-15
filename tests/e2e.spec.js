@@ -37,6 +37,36 @@ async function expectInputFitsViewport(page){
   });
   expect(fit).toBe(true);
 }
+async function expectAllSolutionMovesVisibleAndAnimationContained(page){
+  const result=await page.evaluate(()=>{
+    const list=document.querySelector('#solutionList');
+    const chips=[...list.querySelectorAll('.move-chip')];
+    const instruction=document.querySelector('.instruction-panel');
+    const visual=document.querySelector('.visual-panel');
+    const direction=document.querySelector('#directionCard');
+    const preview=document.querySelector('#solvePreview');
+    const replay=document.querySelector('#replayBtn');
+    const flat=document.querySelector('#flatPyra');
+    const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect(),vr=visual.getBoundingClientRect(),dr=direction.getBoundingClientRect(),pr=preview.getBoundingClientRect(),rr=replay.getBoundingClientRect(),fr=flat.getBoundingClientRect();
+    const allChipsVisible=chips.every(chip=>{const r=chip.getBoundingClientRect();return r.left>=lr.left-1&&r.right<=lr.right+1&&r.top>=lr.top-1&&r.bottom<=lr.bottom+1&&r.bottom<=ir.bottom+1;});
+    return {
+      count:chips.length,
+      solutionLength:window.__PYRA_TEST__.state.solution.length,
+      allChipsVisible,
+      listFits:list.scrollWidth<=list.clientWidth+1&&list.scrollHeight<=list.clientHeight+1,
+      instructionFits:instruction.scrollHeight<=instruction.clientHeight+2,
+      previewOverflow:getComputedStyle(preview).overflow,
+      previewContained:pr.left>=vr.left-1&&pr.right<=vr.right+1&&pr.top>=dr.bottom-1&&pr.bottom<=rr.top+1&&rr.bottom<=fr.top+1&&fr.bottom<=vr.bottom+1
+    };
+  });
+  expect(result.count).toBe(result.solutionLength);
+  expect(result.allChipsVisible).toBe(true);
+  expect(result.listFits).toBe(true);
+  expect(result.instructionFits).toBe(true);
+  expect(result.previewOverflow).toBe('hidden');
+  expect(result.previewContained).toBe(true);
+  return result;
+}
 
 test('Puzzle selection opens deterministic local Cube and returns to chooser',async({page})=>{
   await page.goto('/');
@@ -109,6 +139,19 @@ test('Tetraeder input fits iPhone 17 Pro portrait Safari viewport without scroll
   await page.locator('.face-tab').nth(3).click();
   await expect(page.locator('#faceTitle')).toContainText('Unten');
   await expectInputFitsViewport(page);
+});
+
+test('Tetraeder solve animation stays inside its panel and all solution moves remain visible on iPhone portrait',async({page})=>{
+  await page.setViewportSize({width:402,height:740});
+  await loadPyraTest(page,'#fullTestBtn');await page.locator('#solveBtn').click();
+  await expect(page.locator('#solveView')).toBeVisible();await expect(page.locator('#statusText')).toContainText('Lösung verifiziert');
+  await expectSolveFitsViewport(page);
+  const full=await expectAllSolutionMovesVisibleAndAnimationContained(page);expect(full.count).toBeGreaterThanOrEqual(10);
+  await page.evaluate(()=>{
+    const a=window.__PYRA_TEST__,moves=['U','R','L','B','u','r','l','b',"U'","R'","L'","B'","u'","r'","l'"];
+    a.state.solution=moves;a.state.states=a.Core.buildStates(a.Core.SOLVED,moves);a.state.step=0;window.renderSolution();
+  });
+  const maximum=await expectAllSolutionMovesVisibleAndAnimationContained(page);expect(maximum.count).toBe(15);
 });
 
 test('Tetraeder solve view fits iPhone landscape without page scrolling',async({page})=>{
