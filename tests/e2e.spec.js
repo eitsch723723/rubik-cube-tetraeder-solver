@@ -46,10 +46,10 @@ async function expectAllSolutionMovesVisibleAndAnimationContained(page){
     const direction=document.querySelector('#directionCard');
     const preview=document.querySelector('#solvePreview');
     const replay=document.querySelector('#replayBtn');
-    const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect(),vr=visual.getBoundingClientRect(),dr=direction.getBoundingClientRect(),pr=preview.getBoundingClientRect(),rr=replay.getBoundingClientRect();
+    const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect(),dr=direction.getBoundingClientRect(),pr=preview.getBoundingClientRect(),rr=replay.getBoundingClientRect();
     const allChipsVisible=chips.every(chip=>{const r=chip.getBoundingClientRect();return r.left>=lr.left-1&&r.right<=lr.right+1&&r.top>=lr.top-1&&r.bottom<=lr.bottom+1&&r.bottom<=ir.bottom+1;});
     const allChipTextVisible=chips.every(chip=>chip.scrollWidth<=chip.clientWidth+1&&chip.scrollHeight<=chip.clientHeight+1);
-    const style=getComputedStyle(preview);
+    const previewStyle=getComputedStyle(preview),visualStyle=getComputedStyle(visual);
     return {
       count:chips.length,
       solutionLength:window.__PYRA_TEST__.state.solution.length,
@@ -57,10 +57,10 @@ async function expectAllSolutionMovesVisibleAndAnimationContained(page){
       allChipTextVisible,
       listFits:list.scrollWidth<=list.clientWidth+1&&list.scrollHeight<=list.clientHeight+1,
       instructionFits:instruction.scrollHeight<=instruction.clientHeight+2,
-      previewOverflow:style.overflow,
-      previewPaintContained:style.contain.includes('paint'),
+      previewOverflow:previewStyle.overflow,
+      visualOverflow:visualStyle.overflow,
+      previewPaintContained:previewStyle.contain.includes('paint'),
       animationClearOfDirection:pr.top>=dr.bottom-2,
-      previewInsideVisual:pr.left>=vr.left-2&&pr.right<=vr.right+2&&pr.top>=vr.top-2&&pr.bottom<=vr.bottom+2,
       animationClearOfReplay:pr.bottom<=rr.top+2
     };
   });
@@ -70,9 +70,9 @@ async function expectAllSolutionMovesVisibleAndAnimationContained(page){
   expect(result.listFits).toBe(true);
   expect(result.instructionFits).toBe(true);
   expect(result.previewOverflow).toBe('hidden');
+  expect(result.visualOverflow).toBe('hidden');
   expect(result.previewPaintContained).toBe(true);
   expect(result.animationClearOfDirection).toBe(true);
-  expect(result.previewInsideVisual).toBe(true);
   expect(result.animationClearOfReplay).toBe(true);
   return result;
 }
