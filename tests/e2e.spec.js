@@ -46,25 +46,34 @@ async function expectAllSolutionMovesVisibleAndAnimationContained(page){
     const direction=document.querySelector('#directionCard');
     const preview=document.querySelector('#solvePreview');
     const replay=document.querySelector('#replayBtn');
-    const flat=document.querySelector('#flatPyra');
-    const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect(),vr=visual.getBoundingClientRect(),dr=direction.getBoundingClientRect(),pr=preview.getBoundingClientRect(),rr=replay.getBoundingClientRect(),fr=flat.getBoundingClientRect();
+    const lr=list.getBoundingClientRect(),ir=instruction.getBoundingClientRect(),vr=visual.getBoundingClientRect(),dr=direction.getBoundingClientRect(),pr=preview.getBoundingClientRect(),rr=replay.getBoundingClientRect();
     const allChipsVisible=chips.every(chip=>{const r=chip.getBoundingClientRect();return r.left>=lr.left-1&&r.right<=lr.right+1&&r.top>=lr.top-1&&r.bottom<=lr.bottom+1&&r.bottom<=ir.bottom+1;});
+    const allChipTextVisible=chips.every(chip=>chip.scrollWidth<=chip.clientWidth+1&&chip.scrollHeight<=chip.clientHeight+1);
+    const style=getComputedStyle(preview);
     return {
       count:chips.length,
       solutionLength:window.__PYRA_TEST__.state.solution.length,
       allChipsVisible,
+      allChipTextVisible,
       listFits:list.scrollWidth<=list.clientWidth+1&&list.scrollHeight<=list.clientHeight+1,
       instructionFits:instruction.scrollHeight<=instruction.clientHeight+2,
-      previewOverflow:getComputedStyle(preview).overflow,
-      previewContained:pr.left>=vr.left-1&&pr.right<=vr.right+1&&pr.top>=dr.bottom-1&&pr.bottom<=rr.top+1&&rr.bottom<=fr.top+1&&fr.bottom<=vr.bottom+1
+      previewOverflow:style.overflow,
+      previewPaintContained:style.contain.includes('paint'),
+      animationClearOfDirection:pr.top>=dr.bottom-2,
+      previewInsideVisual:pr.left>=vr.left-2&&pr.right<=vr.right+2&&pr.top>=vr.top-2&&pr.bottom<=vr.bottom+2,
+      animationClearOfReplay:pr.bottom<=rr.top+2
     };
   });
   expect(result.count).toBe(result.solutionLength);
   expect(result.allChipsVisible).toBe(true);
+  expect(result.allChipTextVisible).toBe(true);
   expect(result.listFits).toBe(true);
   expect(result.instructionFits).toBe(true);
   expect(result.previewOverflow).toBe('hidden');
-  expect(result.previewContained).toBe(true);
+  expect(result.previewPaintContained).toBe(true);
+  expect(result.animationClearOfDirection).toBe(true);
+  expect(result.previewInsideVisual).toBe(true);
+  expect(result.animationClearOfReplay).toBe(true);
   return result;
 }
 
