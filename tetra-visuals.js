@@ -18,20 +18,59 @@
   const MOVE_PERM=Object.fromEntries(BASE_MOVES.map(m=>[m,permutationFor(m)]));
   const AFFECTED=Object.fromEntries(Object.entries(MOVE_PERM).map(([m,p])=>[m,new Set(p.map((j,i)=>j!==i?i:null).filter(i=>i!==null))]));
   const currentState=()=>state.states[state.step]||Core.SOLVED;
-  function drawTetra(angle=0,move=null){
-    const svg=$('solvePreview');if(!svg)return;svg.innerHTML='';const s=currentState(),token=move?move[0]:null,moveFace=token?token.toUpperCase():null,affected=token?AFFECTED[token]:null,axis=moveFace?V[MOVE_VERTEX[moveFace]]:null,items=[];
-    for(let solverPos=0;solverPos<36;solverPos++){
-      const fi=Math.floor(solverPos/9),li=solverPos%9,gi=SOLVER_TO_GEOM[fi][li];let pts=GEOM[fi][gi];if(affected&&affected.has(solverPos))pts=pts.map(p=>rotateAxis(p,axis,angle));const pp=pts.map(project),z=pp.reduce((n,p)=>n+p[2],0)/3;items.push({pp,z,fill:CODE_COLOR[s[solverPos]]||'#eef2f6',moving:!!(affected&&affected.has(solverPos))});
-    }
-    items.sort((a,b)=>a.z-b.z);for(const item of items)svg.appendChild(polygon(item.pp,{fill:item.fill,stroke:item.moving?'#0b4ca8':'#101828','stroke-width':item.moving?2.9:2.2,'stroke-linejoin':'round'}));
+  const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
+  let scene=null,sceneBuilds=0,movingPointUpdates=0;
+
+  function makeOrientationLabels(svg){
+    const group=document.createElementNS(SVG,'g');group.setAttribute('class','orientation-markers');group.setAttribute('aria-label','Orientierung V L R U');
+    FACE_VERTICES.forEach((verts,fi)=>{
+      const c=verts.map(i=>V[i]).reduce((a,p)=>add(a,p),[0,0,0]).map(x=>x/3),pt=project(c);
+      const g=document.createElementNS(SVG,'g');g.setAttribute('class','orientation-marker');g.setAttribute('data-face',FACE_LABELS[fi][0]);
+      const circle=document.createElementNS(SVG,'circle');circle.setAttribute('cx',pt[0].toFixed(2));circle.setAttribute('cy',pt[1].toFixed(2));circle.setAttribute('r','12');circle.setAttribute('fill','rgba(255,255,255,.92)');circle.setAttribute('stroke','#087ff5');circle.setAttribute('stroke-width','2');
+      const text=document.createElementNS(SVG,'text');text.setAttribute('x',pt[0].toFixed(2));text.setAttribute('y',(pt[1]+4.5).toFixed(2));text.setAttribute('text-anchor','middle');text.setAttribute('font-size','13');text.setAttribute('font-weight','900');text.setAttribute('fill','#095fc8');text.textContent=FACE_LABELS[fi][0];
+      const title=document.createElementNS(SVG,'title');title.textContent=`${FACE_LABELS[fi][0]} – ${FACE_LABELS[fi][1]}`;g.append(circle,text,title);group.appendChild(g);
+    });
+    svg.appendChild(group);return group;
   }
+
+  function ensureScene(move=null){
+    const svg=$('solvePreview');if(!svg)return null;const s=currentState(),token=move?move[0]:null,key=`${s}|${move||''}`;
+    if(scene&&scene.key===key&&scene.svg===svg)return scene;
+    svg.innerHTML='';const affected=token?AFFECTED[token]:null,moveFace=token?token.toUpperCase():null,axis=moveFace?V[MOVE_VERTEX[moveFace]]:null,entries=[];
+    for(let solverPos=0;solverPos<36;solverPos++){
+      const fi=Math.floor(solverPos/9),li=solverPos%9,gi=SOLVER_TO_GEOM[fi][li],pts3=GEOM[fi][gi],pp=pts3.map(project),z=pp.reduce((n,p)=>n+p[2],0)/3,moving=!!(affected&&affected.has(solverPos));
+      const node=polygon(pp,{fill:CODE_COLOR[s[solverPos]]||'#eef2f6',stroke:moving?'#0b4ca8':'#101828','stroke-width':moving?2.9:2.2,'stroke-linejoin':'round','data-pos':solverPos});svg.appendChild(node);
+      entries.push({solverPos,pts3,node,baseZ:z,z,moving});
+    }
+    const labels=makeOrientationLabels(svg);scene={key,svg,entries,labels,axis,move};sceneBuilds++;return scene;
+  }
+  function drawTetra(angle=0,move=null){
+    const sc=ensureScene(move);if(!sc)return;
+    for(const e of sc.entries){
+      if(e.moving){const pp=e.pts3.map(p=>project(rotateAxis(p,sc.axis,angle)));e.z=pp.reduce((n,p)=>n+p[2],0)/3;e.node.setAttribute('points',pp.map(q=>`${q[0].toFixed(2)},${q[1].toFixed(2)}`).join(' '));movingPointUpdates++;}
+      else e.z=e.baseZ;
+    }
+    [...sc.entries].sort((a,b)=>a.z-b.z).forEach(e=>sc.svg.appendChild(e.node));sc.svg.appendChild(sc.labels);
+  }
+
   let raf=0,animationKey='';
   function stopAnimation(){if(raf)cancelAnimationFrame(raf);raf=0;animationKey='';}
-  function startAnimation(){stopAnimation();if($('solveView')?.hidden)return;const move=state.solution[state.step];if(!move){drawTetra(0,null);return;}animationKey=`${state.step}:${move}:${Date.now()}`;const key=animationKey,start=performance.now(),target=(move.endsWith("'")?1:-1)*(2*Math.PI/3),duration=900,hold=260,cycle=1650;const frame=now=>{if(key!==animationKey||$('solveView')?.hidden)return;const t=(now-start)%cycle;let angle=0;if(t<duration){const x=t/duration,e=.5-.5*Math.cos(Math.PI*x);angle=target*e;}else if(t<duration+hold)angle=target;drawTetra(angle,move);raf=requestAnimationFrame(frame);};raf=requestAnimationFrame(frame);}
+  function startAnimation(){
+    stopAnimation();if($('solveView')?.hidden||document.hidden)return;const move=state.solution[state.step];
+    if(!move){drawTetra(0,null);return;}
+    drawTetra(0,move);
+    if(reduceMotion.matches)return;
+    animationKey=`${state.step}:${move}:${Date.now()}`;const key=animationKey,start=performance.now(),target=(move.endsWith("'")?1:-1)*(2*Math.PI/3),duration=900,hold=260,cycle=1650;
+    const frame=now=>{if(key!==animationKey||$('solveView')?.hidden||document.hidden){raf=0;return;}const t=(now-start)%cycle;let angle=0;if(t<duration){const x=t/duration,e=.5-.5*Math.cos(Math.PI*x);angle=target*e;}else if(t<duration+hold)angle=target;drawTetra(angle,move);raf=requestAnimationFrame(frame);};raf=requestAnimationFrame(frame);
+  }
+  function syncVisibility(hidden=document.hidden){if(hidden)stopAnimation();else if(!$('solveView')?.hidden)startAnimation();}
+
   function renderLabeledFlat(){const h=$('flatPyra');if(!h)return;const s=currentState();h.innerHTML='';for(let f=0;f<4;f++){const card=document.createElement('div');card.className='mini-face-card';const svg=document.createElementNS(SVG,'svg');svg.setAttribute('viewBox','0 0 346.41 300');svg.classList.add('mini-face-svg');TRIANGLES.forEach((pts,i)=>svg.appendChild(polygon(pts,{fill:CODE_COLOR[s[f*9+i]]||'#eef2f6',stroke:'#101828','stroke-width':5,'stroke-linejoin':'round'})));const label=document.createElement('div');label.className='mini-face-label';label.innerHTML=`<strong>${FACE_LABELS[f][0]}</strong><span>${FACE_LABELS[f][1]}</span>`;card.append(svg,label);h.appendChild(card);}}
   function verifyVisualMapping(){const eps=1e-7;for(const m of BASE_MOVES){const p=MOVE_PERM[m],axis=V[MOVE_VERTEX[m.toUpperCase()]],angle=-2*Math.PI/3;for(const i of AFFECTED[m]){const fi=Math.floor(i/9),li=i%9,gi=SOLVER_TO_GEOM[fi][li],c=GEOM[fi][gi].reduce((a,q)=>add(a,q),[0,0,0]).map(x=>x/3),rc=rotateAxis(c,axis,angle),j=p[i],fj=Math.floor(j/9),lj=j%9,gj=SOLVER_TO_GEOM[fj][lj],dc=GEOM[fj][gj].reduce((a,q)=>add(a,q),[0,0,0]).map(x=>x/3);if(norm([rc[0]-dc[0],rc[1]-dc[1],rc[2]-dc[2]])>eps)return false;}}return true;}
-  const step=$('stepCount');if(step)new MutationObserver(()=>requestAnimationFrame(()=>{renderLabeledFlat();startAnimation();})).observe(step,{childList:true,subtree:true,characterData:true});
+  const step=$('stepCount');if(step)new MutationObserver(()=>requestAnimationFrame(()=>{scene=null;renderLabeledFlat();startAnimation();})).observe(step,{childList:true,subtree:true,characterData:true});
   const replay=$('replayBtn');if(replay)replay.onclick=startAnimation;const edit=$('editBtn');if(edit)edit.addEventListener('click',stopAnimation);const backHome=$('backHome');if(backHome)backHome.addEventListener('click',stopAnimation);
+  document.addEventListener('visibilitychange',()=>syncVisibility());
+  const motionChanged=()=>{scene=null;startAnimation();};if(reduceMotion.addEventListener)reduceMotion.addEventListener('change',motionChanged);else if(reduceMotion.addListener)reduceMotion.addListener(motionChanged);
   if(!verifyVisualMapping())console.error('Tetraeder visual mapping regression failed');
-  window.__PYRA_VISUAL_TEST__={verifyVisualMapping,startAnimation,renderLabeledFlat,AFFECTED};
+  window.__PYRA_VISUAL_TEST__={verifyVisualMapping,startAnimation,stopAnimation,syncVisibility,renderLabeledFlat,AFFECTED,isAnimating:()=>!!raf,isReducedMotion:()=>reduceMotion.matches,stats:()=>({sceneBuilds,movingPointUpdates,polygonCount:$('solvePreview')?.querySelectorAll('polygon').length||0})};
 })();
