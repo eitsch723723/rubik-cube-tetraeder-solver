@@ -2,6 +2,7 @@
 (function(){
   const $=id=>document.getElementById(id),api=window.__PYRA_TEST__;if(!api)return;
   const {Core,state}=api;
+  const PROGRESS_KEY='rubik-pyra-progress-v1';
   let seq=0;
   function solveInWorker(start){
     if(typeof Worker==='undefined')return Promise.resolve(Core.solveFull(start,11));
@@ -11,6 +12,23 @@
       w.onmessage=e=>{const d=e.data||{};if(d.id!==id)return;if(d.type==='status'){window.setStatus(d.text,'busy');return;}if(d.type==='done')done(()=>resolve(d.moves));else if(d.type==='error')done(()=>reject(new Error(d.message||'worker-error')));};
       w.onerror=()=>done(()=>reject(new Error('worker-error')));w.postMessage({id,type:'solve',start,maxDepth:11});
     });
+  }
+  function readProgress(){try{return JSON.parse(localStorage.getItem(PROGRESS_KEY)||'null');}catch{return null;}}
+  function clearProgress(){try{localStorage.removeItem(PROGRESS_KEY);}catch{}}
+  function persistProgress(active){
+    try{
+      const start=state.states?.[0]||null,moves=Array.isArray(state.solution)?state.solution.slice():[];
+      if(!start||start.length!==36||!Core.verifySolution(start,moves)){if(!active)localStorage.removeItem(PROGRESS_KEY);return;}
+      localStorage.setItem(PROGRESS_KEY,JSON.stringify({version:1,active:!!active,start,solution:moves,step:Math.max(0,Math.min(Number(state.step)||0,moves.length))}));
+    }catch{}
+  }
+  function restoreProgress(){
+    const p=readProgress();if(!p?.active||p.version!==1||typeof p.start!=='string'||!Array.isArray(p.solution))return;
+    try{
+      if(window.toStringState?.()!==p.start||!Core.verifySolution(p.start,p.solution)){clearProgress();return;}
+      state.solution=p.solution.slice();state.states=Core.buildStates(p.start,state.solution);state.step=Math.max(0,Math.min(Number(p.step)||0,state.solution.length));
+      $('chooser').hidden=true;$('pyraApp').hidden=false;window.showSolve();window.setStatus(`Lösung wiederhergestellt: Zug ${Math.min(state.step+1,state.solution.length||0)} von ${state.solution.length}.`,'ok');
+    }catch(e){console.error(e);clearProgress();}
   }
   const base=m=>m[0].toUpperCase(),isTip=m=>m&&m[0]===m[0].toLowerCase();
   window.moveName=m=>({U:'obere Spitze',R:'rechte Spitze',L:'linke Spitze',B:'hintere Spitze'}[base(m)]);
@@ -23,15 +41,21 @@
     else{$('stepCount').textContent=`Zug ${state.step+1} von ${total}`;$('moveTitle').textContent='Jetzt: '+window.label(m);$('moveDescription').textContent=window.describe(m)+' Die Animation wiederholt sich bis zur Bestätigung.';$('moveBadge').textContent=window.label(m);$('directionCard').textContent=`${isTip(m)?'Nur ':''}${window.moveName(m)}: 120° ${m.endsWith("'")?'gegen den Uhrzeigersinn':'im Uhrzeigersinn'}`;}
     const h=$('solutionList');h.innerHTML='';state.solution.forEach((x,i)=>{const c=document.createElement('span');c.className='move-chip'+(i<state.step?' done':i===state.step?' current':'');c.textContent=`${i+1}. ${window.label(x)}`;h.appendChild(c);});window.renderSolvePreview();window.renderFlat();
   };
-  window.showSolve=function(){document.body.classList.add('solving-pyra');$('inputView').hidden=true;$('solveView').hidden=false;window.renderSolution();};
-  window.showInput=function(){document.body.classList.remove('solving-pyra');$('solveView').hidden=true;$('inputView').hidden=false;window.renderInput();};
+  window.showSolve=function(){document.body.classList.add('solving-pyra');$('inputView').hidden=true;$('solveView').hidden=false;window.renderSolution();persistProgress(true);};
+  window.showInput=function(){document.body.classList.remove('solving-pyra');$('solveView').hidden=true;$('inputView').hidden=false;window.renderInput();persistProgress(false);};
   window.solve=async function(){
     window.setValidation();const basic=window.validateBasic();if(basic){window.setValidation(basic);return;}const start=window.toStringState();$('solveBtn').disabled=true;$('solveBtn').textContent='Ich prüfe …';window.setStatus('Ich prüfe den ganzen Tetraeder und suche eine kurze Lösung …','busy');
-    try{const path=await solveInWorker(start);if(path===null){window.setValidation('So kann ein echter Rubik Tetraeder nicht aussehen. Prüfe die Farben und die Ausrichtung der vier Flächen.');window.setStatus('Dieser Tetraeder-Zustand ist physikalisch nicht erreichbar.','error');return;}if(!Core.verifySolution(start,path))throw new Error('verification');state.solution=path;state.states=Core.buildStates(start,path);state.step=0;window.setStatus(path.length?`Lösung verifiziert: ${path.length} Züge.`:'Der Tetraeder ist schon vollständig gelöst.','ok');window.showSolve();}
+    try{const path=await solveInWorker(start);if(path===null){window.setValidation('So kann ein echter Rubik Tetraeder nicht aussehen. Prüfe die Farben und die Ausrichtung der vier Flächen.');window.setStatus('Dieser Tetraeder-Zustand ist physikalisch nicht erreichbar.','error');clearProgress();return;}if(!Core.verifySolution(start,path))throw new Error('verification');state.solution=path;state.states=Core.buildStates(start,path);state.step=0;window.setStatus(path.length?`Lösung verifiziert: ${path.length} Züge.`:'Der Tetraeder ist schon vollständig gelöst.','ok');window.showSolve();}
     catch(e){console.error(e);window.setValidation('Interner Prüffehler. Die Lösung wurde nicht angezeigt.');window.setStatus('Lösung konnte nicht verifiziert werden.','error');}
     finally{$('solveBtn').disabled=false;$('solveBtn').textContent='Tetraeder lösen';}
   };
-  $('backHome')?.addEventListener('click',()=>document.body.classList.remove('solving-pyra'));
+  $('nextStep')?.addEventListener('click',()=>queueMicrotask(()=>persistProgress(true)));
+  $('backStep')?.addEventListener('click',()=>queueMicrotask(()=>persistProgress(true)));
+  $('editBtn')?.addEventListener('click',()=>queueMicrotask(()=>persistProgress(false)));
+  $('backHome')?.addEventListener('click',()=>{document.body.classList.remove('solving-pyra');queueMicrotask(()=>persistProgress(false));});
+  $('resetBtn')?.addEventListener('click',()=>queueMicrotask(()=>{if(state.faces.flat().every(x=>!x))clearProgress();}));
+  window.addEventListener('beforeunload',()=>persistProgress(!$('pyraApp')?.hidden&&!$('solveView')?.hidden));
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(restoreProgress,0),{once:true});
   if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(console.warn);
-  window.__PYRA_TEST__.solveInWorker=solveInWorker;
+  window.__PYRA_TEST__.solveInWorker=solveInWorker;window.__PYRA_TEST__.persistProgress=persistProgress;window.__PYRA_TEST__.restoreProgress=restoreProgress;window.__PYRA_TEST__.clearProgress=clearProgress;
 })();
